@@ -1,11 +1,82 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
+import axios from "axios";
+import { Oval } from "react-loader-spinner";
+import { useImmerReducer } from "use-immer";
+import Post from "./Post";
 
 function Home() {
+  const initialState = {
+    page: {
+      next: 1,
+      totalPages: 0
+    },
+
+    post: {
+      total: 0
+    },
+
+    isLoading: true
+  };
+
+  function appReducer(draft, action) {
+    switch (action.type) {
+      case "setNextPage":
+        draft.page.next++;
+        return;
+
+      case "setIsLoading":
+        draft.isLoading = !draft.isLoading;
+        return;
+    }
+  }
+
+  const [posts, setPosts] = useState([]);
+  const [state, dispatch] = useImmerReducer(appReducer, initialState);
+
+  useEffect(() => {
+    async function getPosts() {
+      try {
+        const response = await axios.get(
+          "/posts?per_page=5&_fields=id,title,excerpt,date,author"
+        );
+        setPosts(response.data);
+        dispatch({ type: "setIsLoading" });
+      } catch (error) {
+        console.log(error);
+      }
+    }
+    getPosts();
+  }, []);
+
+  useEffect(() => {
+      async function getNextPosts() {
+        try {
+          const response = await axios.get(
+            `/posts?per_page=5&_fields=id,title,excerpt,date,author&page=${state.page.next}`
+          );
+          setPosts(response.data);
+          dispatch({ type: "setIsLoading" });
+        } catch (error) {
+          console.log(error);
+        }
+      }
+	  dispatch({ type: "setIsLoading" });
+      getNextPosts();
+  }, [state.page.next]);
+
+  function nextPagehandler(e) {
+	e.preventDefault()
+    dispatch({ type: "setNextPage" });
+  }
+
+  console.log(state.page.next)
+
   return (
     <>
       <header
         className="masthead"
-        style={{backgroundImage: `url('./assets/img/home-bg.jpg')`}}
+        style={{ backgroundImage: `url('./assets/img/home-bg.jpg')` }}
       >
         <div className="container position-relative px-4 px-lg-5">
           <div className="row gx-4 gx-lg-5 justify-content-center">
@@ -24,80 +95,35 @@ function Home() {
       <div className="container px-4 px-lg-5">
         <div className="row gx-4 gx-lg-5 justify-content-center">
           <div className="col-md-10 col-lg-8 col-xl-7">
-            <div className="post-preview">
-              <a href="post.html">
-                <h2 className="post-title">
-                  Man must explore, and this is exploration at its greatest
-                </h2>
-                <h3 className="post-subtitle">
-                  Problems look mighty small from 150 miles up
-                </h3>
-              </a>
-              <p className="post-meta">
-                Posted by
-                <a href="#!">Start Bootstrap</a>
-                on September 24, 2022
-              </p>
-            </div>
-
-            <hr className="my-4" />
-
-            <div className="post-preview">
-              <a href="post.html">
-                <h2 className="post-title">
-                  I believe every human has a finite number of heartbeats. I
-                  don't intend to waste any of mine.
-                </h2>
-              </a>
-              <p className="post-meta">
-                Posted by
-                <a href="#!">Start Bootstrap</a>
-                on September 18, 2022
-              </p>
-            </div>
-
-            <hr className="my-4" />
-
-            <div className="post-preview">
-              <a href="post.html">
-                <h2 className="post-title">
-                  Science has not yet mastered prophecy
-                </h2>
-                <h3 className="post-subtitle">
-                  We predict too much for the next year and yet far too little
-                  for the next ten.
-                </h3>
-              </a>
-              <p className="post-meta">
-                Posted by
-                <a href="#!">Start Bootstrap</a>
-                on August 24, 2022
-              </p>
-            </div>
-
-            <hr className="my-4" />
-
-            <div className="post-preview">
-              <a href="post.html">
-                <h2 className="post-title">Failure is not an option</h2>
-                <h3 className="post-subtitle">
-                  Many say exploration is part of our destiny, but it’s actually
-                  our duty to future generations.
-                </h3>
-              </a>
-              <p className="post-meta">
-                Posted by
-                <a href="#!">Start Bootstrap</a>
-                on July 8, 2022
-              </p>
-            </div>
+            {state.isLoading ? (
+              <Oval
+                height={80}
+                width={80}
+                color="#4fa94d"
+                wrapperStyle={{}}
+                wrapperClass=""
+                visible={true}
+                ariaLabel="oval-loading"
+                secondaryColor="#4fa94d"
+                strokeWidth={2}
+                strokeWidthSecondary={2}
+              />
+            ) : (
+              posts.map(post => {
+                return <Post post={post} key={post.id} />;
+              })
+            )}
 
             <hr className="my-4" />
 
             <div className="d-flex justify-content-end mb-4">
-              <a className="btn btn-primary text-uppercase" href="#!">
+              <Link
+                onClick={nextPagehandler}
+                className="btn btn-primary text-uppercase"
+                to="#!"
+              >
                 Older Posts →
-              </a>
+              </Link>
             </div>
           </div>
         </div>
