@@ -6,7 +6,7 @@ function Header() {
     <>
       <nav className="navbar navbar-expand-lg navbar-light" id="mainNav">
         <div className="container px-4 px-lg-5">
-          <Link className="navbar-brand" to="index.html">
+          <Link className="navbar-brand" to="/">
             Start Bootstrap
           </Link>
           <button
@@ -39,6 +39,14 @@ function Header() {
                   to="/contact"
                 >
                   Contact
+                </Link>
+              </li>
+              <li className="nav-item">
+                <Link
+                  className="nav-link px-lg-3 py-3 py-lg-4"
+                  to="/create"
+                >
+                  Create Post
                 </Link>
               </li>
             </ul>

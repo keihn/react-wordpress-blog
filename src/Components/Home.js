@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
-import axios from "axios";
+import Axios from "axios";
 import { Oval } from "react-loader-spinner";
 import { useImmerReducer } from "use-immer";
 import Post from "./Post";
@@ -16,7 +16,7 @@ function Home() {
       total: 0
     },
 
-    isLoading: true
+    isLoading: false
   };
 
   function appReducer(draft, action) {
@@ -34,10 +34,12 @@ function Home() {
   const [posts, setPosts] = useState([]);
   const [state, dispatch] = useImmerReducer(appReducer, initialState);
 
+  const appRequest = Axios.CancelToken.source()
+
   useEffect(() => {
     async function getPosts() {
       try {
-        const response = await axios.get(
+        const response = await Axios.get(
           "/posts?per_page=5&_fields=id,title,excerpt,date,author"
         );
         setPosts(response.data);
@@ -46,13 +48,17 @@ function Home() {
         console.log(error);
       }
     }
+
+	return () => {
+		appRequest.cancel();
+	}
     getPosts();
   }, []);
 
   useEffect(() => {
       async function getNextPosts() {
         try {
-          const response = await axios.get(
+          const response = await Axios.get(
             `/posts?per_page=5&_fields=id,title,excerpt,date,author&page=${state.page.next}`
           );
           setPosts(response.data);

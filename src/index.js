@@ -10,9 +10,11 @@ import Footer from "./Components/Footer";
 import Contact from "./Components/Contact";
 import About from "./Components/About";
 import SinglePost from "./Components/SinglePost";
+import CreatePost from "./Components/CreatePost";
 
 //Styles
 import "./css/styles.css";
+
 
 axios.defaults.baseURL =  process.env.BASEURL || "http://backend.test/wp-json/wp/v2/"
 
@@ -27,6 +29,7 @@ function Index () {
         <Route path="/contact" element={<Contact />} />
         <Route path="/about" element={<About />} />
         <Route path="/post/:id" element={<SinglePost />} />
+        <Route path="/create" element={<CreatePost />} />
       </Routes>
       <Footer />
     </BrowserRouter>
