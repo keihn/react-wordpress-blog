@@ -40,7 +40,7 @@ function Home() {
     async function getPosts() {
       try {
         const response = await Axios.get(
-          "/posts?per_page=5&_fields=id,title,excerpt,date,author"
+          "/posts?per_page=5&_fields=id,title,excerpt,date,author", {cancelToken: appRequest.token}
         );
         setPosts(response.data);
         dispatch({ type: "setIsLoading" });

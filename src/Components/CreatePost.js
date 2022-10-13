@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import { useImmerReducer } from "use-immer";
+import Axios from "axios"
 
 function CreatePost() {
 
@@ -26,18 +27,9 @@ function CreatePost() {
     isLoading: true
   };
 
-  const [value, setValue] = useState('');
   const [state, dispatch] = useImmerReducer(appReducer, formState);
-  const editor = useRef()
-
-  editor.current.onBlur = () => {
-    console.log("blur")
-  }
 
 
- 
-
-  
 
   function appReducer(draft, action) {
     switch (action.type) {
@@ -49,6 +41,9 @@ function CreatePost() {
             if (!action.value.trim()) {
               draft.title.hasError = true;
               draft.title.message = "Title cannot be empty";
+            }else{
+              draft.title.hasError = false;
+              draft.title.message = ""
             }
             return;
 
@@ -62,29 +57,29 @@ function CreatePost() {
         
         case "bodyRules":
             if(!action.value){
-                console.log("run")
                 draft.body.hasError = true;
                 draft.body.message = "The post content cannot be empty"
-                console.log("body cannot be empty")
+              }else{
+                draft.body.hasError = false;
+                draft.body.message = ""
               }
             return
     }
   }
-  
 
-  function validateBody() {
-    dispatch({type: "bodyRules:", value: state.value})
-  }
 
-  function setBodyValue(html) {
-    setValue(html);
-    console.log(html)
-  }
 
-  function handleSubmit(e) {
+  async function handleSubmit(e) {
     e.preventDefault();
-    console.log("trying to submit")
 
+    try {
+      if(!state.title.hasError && !state.title.hasError){
+        const response = await Axios.post("/posts", {title: state.title.value, content: state.body.value, excerpt: state.excerpt.value})
+      }
+    } catch (error) {
+      console.log(error)
+    }
+    
   }
 
   return (
@@ -167,9 +162,8 @@ function CreatePost() {
 
                   <ReactQuill
                     theme="snow"
-                    value={value}
-                    onChange={setBodyValue}
-                    ref={editor}
+                    onChange={html => {dispatch({type: "setBody", value: html})}}
+                    onBlur={(html) => {dispatch({type: "bodyRules", value: html.index})}}
                   />
 
                     {state.body.hasError ? (
